@@ -110,4 +110,74 @@ class TestCBuffer < Test::Unit::TestCase
     assert_equal 3, b.get
     assert_equal 4, b.get
   end
+
+  def test_all
+    b = CBuffer.new(5)
+    assert_equal [], b.all
+    b.put 1                 # [1,_,_,_,_,x]
+    b.put 2                 # [1,2,_,_,_,x]
+    b.put 3                 # [1,2,3,_,_,x]
+    b.put 4                 # [1,2,3,4,_,x]
+    b.put 5                 # [1,2,3,4,5,x]
+    assert_equal (1..5).to_a, b.all
+    b.put 6                 # [x,2,3,4,5,6]
+    b.put 7                 # [6,7,x,3,4,5]
+    assert_equal (3..7).to_a, b.all
+    b.put 8                 # [6,7,8,x,4,5]
+    b.put 9                 # [6,7,8,9,x,5]
+    assert_equal (5..9).to_a, b.all
+  end
+
+  def test_empty_scan
+    b = tb(5)
+    assert_equal([nil,[]], b.scan {|i| i == 4 })
+  end
+
+  def test_simple_scan_first
+    b = tb(5,4)
+    assert_equal([4,[]], b.scan {|i| i == 4 })
+  end
+
+  def test_simple_scan_mid
+    b = tb(5,4)
+    assert_equal([2,[4,3]], b.scan {|i| i == 2 })
+  end
+
+  def test_simple_scan_last
+    b = tb(5,4)
+    assert_equal([1,[4,3,2]], b.scan {|i| i == 1 })
+  end
+
+  def test_simple_scan_not_found
+    b = tb(5,4)
+    assert_equal([nil,[4,3,2,1]], b.scan {|i| i == 0 })
+  end
+
+  def test_complex_scan_first
+    b = tb(5,7) # 7,6|5,4,3
+    assert_equal([7,[]], b.scan {|i| i == 7 })
+  end
+
+  def test_complex_scan_mid
+    b = tb(5,7) # 7,6|5,4,3
+    assert_equal([4,[7,6,5]], b.scan {|i| i == 4 })
+  end
+
+  def test_complex_scan_last
+    b = tb(5,7) # 7,6|5,4,3
+    assert_equal([3,[7,6,5,4]], b.scan {|i| i == 3 })
+  end
+
+  def test_complex_scan_not_found
+    b = tb(5,7) # 7,6|5,4,3
+    assert_equal([nil,[7,6,5,4,3]], b.scan {|i| i == 2 })
+  end
+
+  private
+
+  def tb(cap, num=nil)
+    b = CBuffer.new(cap)
+    (1..num).each {|i| b.put i } if num
+    b
+  end
 end
