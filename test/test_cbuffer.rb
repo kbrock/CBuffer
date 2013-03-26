@@ -28,41 +28,38 @@ class TestCBuffer < Test::Unit::TestCase
 
   def test_circularness
     b = CBuffer.new(5)
-    b.put 1 # [1,nil,nil,nil,nil]
-    b.put 2 # [1,2,nil,nil,nil]
-    b.put 3 # [1,2,3,nil,nil]
-    b.get   # [nil,2,3,nil,nil]
-    b.put 4 # [nil,2,3,4,nil]
-    b.put 5 # [nil,2,3,4,5]
-    b.put 6 # [6,2,3,4,5]
-    assert_raise(CBuffer::BufferFull) {
-      b.put(3)
-    }
-    b.get   # [6, nil, 3, 4, 5]
-    b.put 7 # [6,7,3,4,5]
-    assert_raise(CBuffer::BufferFull) {
-      b.put(8)
-    }
+    b.put 1                 # [1,_,_,_,_,x]
+    b.put 2                 # [1,2,_,_,_,x]
+    b.put 3                 # [1,2,3,_,_,x]
+    assert_equal 1, b.get   # [x,2,3,_,_,_]
+    b.put 4                 # [x,2,3,4,_,_]
+    b.put 5                 # [x,2,3,4,5,_]
+    b.put 6                 # [6,x,2,3,4,5]
+    #cause overflow
+    b.put 7                 # [6,7,x,3,4,5]
+    assert_equal 3, b.get   # [6,7,_,x,4,5]
+    b.put 8                 # [6,7,8,x,4,5]
+    #cause overflow
+    b.put 9                 # [6,7,8,9,x,5]
+    assert_equal 5, b.get   # [6,7,8,9,_,x]
   end
 
   def test_buffer_overload
     b = CBuffer.new(3)
-    assert_raise(CBuffer::BufferFull) {
       b.put(1)
       b.put(2)
       b.put(3)
-      b.put(4)
-    }
+      b.put(4) #overflow
+      assert_equal 2, b.get
   end
 
   def test_buffer_overload_with_nil
     b = CBuffer.new(3)
-    assert_raise(CBuffer::BufferFull) {
       b.put 1
       b.put 2
       b.put 3
-      b.put nil
-    }
+      b.put nil #overflow
+      assert_equal 2, b.get
   end
   
   def test_clear_buffer
@@ -70,11 +67,10 @@ class TestCBuffer < Test::Unit::TestCase
     b.put(1)
     b.put(2)
     b.put(8)
-    assert_raise(CBuffer::BufferFull) {
-      b.put(nil)
-    }
+    b.put(9)
     b.clear
     assert b.empty?
+    assert_nil b.get
   end
 
   def test_example_used_in_readme
@@ -93,11 +89,11 @@ class TestCBuffer < Test::Unit::TestCase
 
   def test_again
     b = CBuffer.new(5)
-    assert !b.put(1)
-    assert !b.put(2)
-    assert !b.put(3)
-    assert !b.put(4)
-    assert b.put(5)
+    assert ! b.put(1)
+    assert ! b.put(2)
+    assert ! b.put(3)
+    assert ! b.put(4)
+    assert ! b.put(5) #nothing dropped yet
     assert_equal 1, b.get
     assert_equal 2, b.get
     assert_equal 3, b.get
