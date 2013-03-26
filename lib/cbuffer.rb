@@ -2,9 +2,8 @@ class CBuffer
   class BufferFull < StandardError; end
 
   def initialize(capacity)
-    @capacity = capacity
-    @f = @b = @fc = 0
-    @buffer = Array.new(capacity)
+    @capacity = capacity+1
+    clear
   end
 
   def get
@@ -12,7 +11,6 @@ class CBuffer
     element = @buffer[@b]
     @buffer[@b] = nil
     @b = (@b + 1) % @capacity
-    @fc = @fc - 1
     element
   end
 
@@ -20,28 +18,27 @@ class CBuffer
     raise BufferFull if full?
     @buffer[@f] = element
     @f = (@f + 1) % @capacity
-    @fc = @fc + 1
     full?
   end
 
   def full?
-    @f == @b && @fc != 0
+    @b == 0 ? @f == size : @f == @b-1
   end
 
   def empty?
-    @f == @b && @fc == 0
+    @f == @b
   end
 
   def size
-    @capacity
+    @capacity-1
   end
 
   def clear
     @buffer = Array.new(@capacity)
-    @f = @b = @fc = 0
+    @f = @b = 0
   end
 
   def to_s
-    "<#{self.class} @size=#{@capacity}>"
+    "<#{self.class} @size=#{size}>"
   end
 end
