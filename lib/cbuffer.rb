@@ -1,3 +1,6 @@
+# https://github.com/bbcrd/CBuffer
+# Original author Duncan Robertson <duncan.robertson at bbc.co.uk>
+# Modifications Keenan Brock <keenan@thebrocks.net>
 class CBuffer
   def initialize(capacity)
     @capacity = capacity+1

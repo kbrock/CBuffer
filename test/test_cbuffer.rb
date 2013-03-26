@@ -1,5 +1,8 @@
 require 'helper'
 
+# https://github.com/bbcrd/CBuffer
+# Original author Duncan Robertson <duncan.robertson at bbc.co.uk>
+# Modifications Keenan Brock <keenan@thebrocks.net>
 class TestCBuffer < Test::Unit::TestCase
   def test_simple
     b = CBuffer.new(7)
@@ -126,6 +129,8 @@ class TestCBuffer < Test::Unit::TestCase
     b.put 8                 # [6,7,8,x,4,5]
     b.put 9                 # [6,7,8,9,x,5]
     assert_equal (5..9).to_a, b.all
+    b.clear
+    assert_equal [], b.all
   end
 
   def test_empty_scan
