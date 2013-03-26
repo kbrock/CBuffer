@@ -32,24 +32,6 @@ class CBuffer
     end
   end
 
-  def get
-    pop unless empty?
-  end
-
-  def all
-    if @f == @b
-      []
-    elsif @f > @b
-      @buffer[@b...@f]
-    else
-      @buffer[@b...@capacity] + @buffer[0...@f]
-    end
-  end
-
-  def empty?
-    @f == @b
-  end
-
   def clear
     @buffer = Array.new(@capacity)
     @f = @b = 0
